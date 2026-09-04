@@ -1,4 +1,4 @@
 window.CCI8_SUPABASE_CONFIG = {
-  url: 'https://tmyjxdmipwlusciaqtuc.supabase.co',
-  key: 'COLE_AQUI_A_PUBLISHABLE_KEY_DO_SUPABASE'
+  url: 'https://tmyjxdmipwlusciagtuc.supabase.co',
+  key: 'sb_publishable_J_B5RCJlUnPoelOXn7iMuw_rStJ8JwI'
 };
