@@ -1363,7 +1363,7 @@ function instalarApp(){
           <div class="v36Cell" data-label="Processo S2iD"><strong>${escapeHtml(p.processo||'—')}</strong><small>${escapeHtml(p.agente||'')}</small></div>
           <div class="v36Cell" data-label="Município">${escapeHtml(p.municipio||'—')}</div>
           <div class="v36Cell" data-label="Evento">${escapeHtml(p.evento||'—')}</div>
-          <div class="v36Cell" data-label="Data">${escapeHtml(formatDate(p.data||p.created||p.updated))}</div>
+          <div class="v36Cell" data-label="Data">${escapeHtml(formatDateTime(p.data||p.created||p.updated))}</div>
           <div class="v36Cell" data-label="Status">${statusHtml(p)}</div>
           <div class="v36Cell" data-label="Ações"><div class="v36Actions">
             <button class="v36Action edit" title="Editar" onclick="phase2Edit('${p.id}')">✎</button>
@@ -1397,7 +1397,7 @@ function instalarApp(){
               <button class="v36NavBtn" onclick="processos()">▤ PROCESSOS</button>
               <button class="v36NavBtn" onclick="relatorios()">▥ RELATÓRIOS</button>
               <button class="v36NavBtn" onclick="alert('Configurações de usuários serão configuradas na próxima etapa.')">⚙ CONFIGURAÇÕES</button>
-              <div class="v36User"><span>♟ ${escapeHtml(user.email||'Usuário')}</span><span class="v36UserSep"></span><button class="v36NavBtn" onclick="signOut()">⇥ SAIR</button></div>
+              <div class="v36User"><span>♟ ${escapeHtml(user.email||'Usuário')}</span><span class="v36UserSep"></span><button class="v36NavBtn" onclick="cloud.auth.signOut().then(()=>location.reload())">⇥ SAIR</button></div>
             </div>
           </nav>
         </section>
