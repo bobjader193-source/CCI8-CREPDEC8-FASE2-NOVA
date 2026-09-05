@@ -687,7 +687,7 @@ function instalarApp(){
 #p2User button{border:1px solid #ffffff55;background:#ffffff12;color:#fff;border-radius:999px;padding:4px 8px;font-weight:800;cursor:pointer}
 .p2Status{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#fff8e9;border:1px solid #f4c788;color:#7a541e;font-size:11px;font-weight:800}
 .p2Status.ok{background:#eef9f1;border-color:#a9d8b5;color:#176b37}.p2Status.err{background:#fff0f0;border-color:#efb0b0;color:#a51d1d}
-.p2Loading{padding:24px;text-align:center;color:#68758a;font-weight:800}
+.dangerBtn{background:#d73535!important;color:#fff!important;border-color:#d73535!important}.processActions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.p2Loading{padding:24px;text-align:center;color:#68758a;font-weight:800}
 </style>
 <div id="p2Login">
   <div class="box">
@@ -775,7 +775,16 @@ function instalarApp(){
   async function cloudList(){
     const {data,error}=await cloud.from('processos').select('*').order('updated_at',{ascending:false});
     if(error) throw error;
-    return (data||[]).map(mapRow);
+    const rows=(data||[]).map(mapRow);
+    // Um processo S2iD representa uma única conferência no CCI 8.
+    // Oculta duplicidades antigas na interface, mantendo o registro mais atualizado.
+    const seen=new Set(), out=[];
+    for(const p of rows){
+      const key=String(p.processo||'').trim();
+      if(key){ if(seen.has(key)) continue; seen.add(key); }
+      out.push(p);
+    }
+    return out;
   }
   async function cloudGet(id){
     const {data,error}=await cloud.from('processos').select('*').eq('id',String(id)).single();
@@ -815,18 +824,34 @@ function instalarApp(){
             <button class="home" onclick="relatorios()"><span class="ico">▤</span><span><b>RELATÓRIOS</b><small>Visualizar e gerar relatórios em PDF</small></span><span class="arrow">›</span></button>
           </div>
           <div class="processPreview"><h3>ÚLTIMOS PROCESSOS <span style="float:right;color:#f28327;cursor:pointer" onclick="processos()">VER TODOS ›</span></h3>
-          ${recentes.length?recentes.map(p=>{const err=isPending(p), n=pendingCount(p); return `<div class="previewRow"><span class="previewDot ${err?'red':''}"></span><div class="previewMain"><b>${escapeHtml(p.municipio||'Sem município')}</b><small>${escapeHtml(p.evento||'Sem evento')} • S2iD ${escapeHtml(p.processo||'—')}</small></div><span class="previewBadge ${err?'red':''}">${err?n+' PEND.':'SEM PEND.'}</span><div class="previewActions"><button class="previewEdit" title="Abrir processo" onclick="phase2Edit('${p.id}')">✎</button></div></div>`}).join(''):'<div style="padding:18px;text-align:center;color:#b9c8e3;font-size:10px">Nenhum processo registrado.</div>'}</div>
+          ${recentes.length?recentes.map(p=>{const err=isPending(p), n=pendingCount(p); return `<div class="previewRow"><span class="previewDot ${err?'red':''}"></span><div class="previewMain"><b>${escapeHtml(p.municipio||'Sem município')}</b><small>${escapeHtml(p.evento||'Sem evento')} • S2iD ${escapeHtml(p.processo||'—')}</small></div><span class="previewBadge ${err?'red':''}">${err?n+' PEND.':'SEM PEND.'}</span><div class="previewActions"><button class="previewEdit" title="Abrir processo" onclick="phase2Edit('${p.id}')">✎</button><button class="previewDelete" title="Excluir processo" onclick="excluirNuvem('${p.id}')">×</button></div></div>`}).join(''):'<div style="padding:18px;text-align:center;color:#b9c8e3;font-size:10px">Nenhum processo registrado.</div>'}</div>
         </section>
       </div>`;
     }catch(e){ $('app').innerHTML=`<div class="card"><h2>Erro ao carregar processos</h2>${status(escapeHtml(e.message||e),'err')}<button class="btn ghost" onclick="home()">Tentar novamente</button></div>`; }
   }
 
+  async function rawCloudCount(){
+    const {count,error}=await cloud.from('processos').select('id',{count:'exact',head:true});
+    if(error) return null;
+    return Number(count||0);
+  }
+
+  async function excluirNuvem(id){
+    if(!user||!cloud) throw new Error('Sessão não autenticada.');
+    const alvo=await cloudGet(id);
+    if(!confirm(`Excluir definitivamente o processo\n\n${alvo.municipio||''} — ${alvo.evento||''}\nS2iD: ${alvo.processo||'—'}\n\nEsta ação não pode ser desfeita.`)) return;
+    const {error}=await cloud.from('processos').delete().eq('id',String(id));
+    if(error) throw error;
+    await p2Processes();
+  }
+  window.excluirNuvem=async(id)=>{try{await excluirNuvem(id)}catch(e){alert('Não foi possível excluir o processo.\n\n'+(e.message||e)+'\n\nSe aparecer “new row violates row-level security policy” ou erro de RLS, falta autorizar exclusão na tabela processos do Supabase.')}};
+
   async function p2Processes(){
     $('app').innerHTML=`<div class="card"><div class="p2Loading">Consultando processos...</div></div>`;
     try{
       const list=await cloudList();
-      const rows=list.map(p=>{const n=pendingCount(p), err=n>0; const s=allAnswered(p)?(err?'COM PENDÊNCIAS':'SEM PENDÊNCIAS'):'EM ANDAMENTO'; return `<div class="processRow ${err?'procRed':'procGreen'}"><div class="processMain"><div class="processDate">${formatDateTime(p.updated||p.created)}</div><b>${escapeHtml(p.municipio||'Sem município')} — ${escapeHtml(p.evento||'Sem evento')}</b><small>Processo S2iD: ${escapeHtml(p.processo||'—')} • ${s}${err?' • '+n+' pendência(s)':''}</small></div><div class="processActions"><button type="button" class="btn primary editBtn" onclick="phase2Edit('${p.id}')">✎ EDITAR</button></div></div>`}).join('');
-      $('app').innerHTML=`<div class="card"><div class="processHeader"><div><div class="eyebrow">Gestão de processos</div><h2>Processos</h2><p>Processos da CREPDEC 8 armazenados no banco central.</p></div></div>${status('Leitura direta do Supabase.','ok')}${rows||'<div class="emptyProc">Nenhuma conferência registrada.</div>'}<button class="btn ghost" style="margin-top:14px" onclick="home()">‹ Voltar</button></div>`;
+      const rows=list.map(p=>{const n=pendingCount(p), err=n>0; const s=allAnswered(p)?(err?'COM PENDÊNCIAS':'SEM PENDÊNCIAS'):'EM ANDAMENTO'; return `<div class="processRow ${err?'procRed':'procGreen'}"><div class="processMain"><div class="processDate">${formatDateTime(p.updated||p.created)}</div><b>${escapeHtml(p.municipio||'Sem município')} — ${escapeHtml(p.evento||'Sem evento')}</b><small>Processo S2iD: ${escapeHtml(p.processo||'—')} • ${s}${err?' • '+n+' pendência(s)':''}</small></div><div class="processActions"><button type="button" class="btn primary editBtn" onclick="phase2Edit('${p.id}')">✎ EDITAR</button><button type="button" class="btn dangerBtn" onclick="excluirNuvem('${p.id}')">🗑 EXCLUIR</button></div></div>`}).join('');
+      $('app').innerHTML=`<div class="card"><div class="processHeader"><div><div class="eyebrow">Gestão de processos</div><h2>Processos</h2><p>Processos da CREPDEC 8 armazenados no banco central.</p></div></div>${status(list.length<(await rawCloudCount())?'Duplicidades antigas ocultadas • exibição do registro mais atualizado.':'Leitura direta do Supabase.','ok')}${rows||'<div class="emptyProc">Nenhuma conferência registrada.</div>'}<button class="btn ghost" style="margin-top:14px" onclick="home()">‹ Voltar</button></div>`;
     }catch(e){$('app').innerHTML=`<div class="card"><h2>Não foi possível carregar os processos</h2>${status(escapeHtml(e.message||e),'err')}<button class="btn ghost" onclick="processos()">Tentar novamente</button></div>`}
   }
 
@@ -834,7 +859,7 @@ function instalarApp(){
     $('app').innerHTML=`<div class="card"><div class="p2Loading">Carregando relatórios...</div></div>`;
     try{
       const list=await cloudList();
-      const rows=list.map(p=>{const n=pendingCount(p), cls=n?'procRed':'procGreen'; return `<div class="processRow ${cls}"><div class="processMain"><div class="processDate">${formatDateTime(p.updated||p.created)}</div><b>${escapeHtml(p.municipio||'Sem município')} — ${escapeHtml(p.evento||'Sem evento')}</b><small>S2iD: ${escapeHtml(p.processo||'—')} • ${n?n+' pendência(s)':'Sem pendências'}</small></div><button class="btn primary" type="button" onclick="phase2Pdf('${p.id}')">▤ PDF</button></div>`}).join('');
+      const rows=list.map(p=>{const n=pendingCount(p), cls=n?'procRed':'procGreen'; return `<div class="processRow ${cls}"><div class="processMain"><div class="processDate">${formatDateTime(p.updated||p.created)}</div><b>${escapeHtml(p.municipio||'Sem município')} — ${escapeHtml(p.evento||'Sem evento')}</b><small>S2iD: ${escapeHtml(p.processo||'—')} • ${n?n+' pendência(s)':'Sem pendências'}</small></div><div class="processActions"><button class="btn primary" type="button" onclick="phase2Pdf('${p.id}')">▤ PDF</button><button class="btn dangerBtn" type="button" onclick="excluirNuvem('${p.id}')">🗑 EXCLUIR</button></div></div>`}).join('');
       $('app').innerHTML=`<div class="card"><div class="eyebrow">Documentos</div><h2>Relatórios</h2><p>Gere o relatório do processo armazenado no banco central.</p>${status('Cada PDF é montado a partir do registro selecionado.','ok')}${rows||'<div class="emptyProc">Nenhuma conferência registrada.</div>'}<button class="btn ghost" style="margin-top:14px" onclick="home()">‹ Voltar</button></div>`;
     }catch(e){$('app').innerHTML=`<div class="card"><h2>Não foi possível carregar os relatórios</h2>${status(escapeHtml(e.message||e),'err')}<button class="btn ghost" onclick="relatorios()">Tentar novamente</button></div>`}
   }
