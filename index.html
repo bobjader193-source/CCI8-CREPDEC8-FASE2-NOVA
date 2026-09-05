@@ -1084,7 +1084,7 @@ function gerarPDFEmJanela(w){
   const sim=ITEMS.filter(x=>current.answers?.[x.id]==='SIM').length;
   const nao=naoItems.length;
   const na=ITEMS.filter(x=>current.answers?.[x.id]==='N/A').length;
-  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>CCI 8 — Relatório</title>
+  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>CCI 8 — Relatório PDF</title>
   <style>
   @page{size:A4;margin:14mm}body{font-family:Arial,sans-serif;color:#17243b;font-size:10.5px;margin:0}
   h1{color:#0a3472;margin:0 0 3px;font-size:20px}h2{color:#8b2222;margin:18px 0 8px;font-size:15px}.sub{color:#66758b;margin-bottom:14px}
@@ -1156,7 +1156,8 @@ async function phase2EditProcess(id){
     app.innerHTML='<div class="card"><div class="eyebrow">FASE 2 • V34</div><h2>Carregando conferência...</h2><p>Buscando o processo no banco central.</p></div>';
     const p=await phase2CloudGet(id);
     current=p;
-    const firstPending=GROUPS.findIndex(g=>g.items.some(item=>!current.answers?.[item.id]));
+    const groups=[...new Set(ITEMS.map(x=>x.group))];
+    const firstPending=groups.findIndex(groupName=>ITEMS.filter(item=>item.group===groupName).some(item=>!current.answers?.[item.id]));
     idx=firstPending>=0?firstPending:0;
     renderItem();
   }catch(e){
@@ -1177,7 +1178,7 @@ function phase2ReportHtml(p){
   const sim=ITEMS.filter(x=>p.answers?.[x.id]==='SIM').length;
   const nao=naoItems.length;
   const na=ITEMS.filter(x=>p.answers?.[x.id]==='N/A').length;
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>CCI 8 — Relatório</title>
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>CCI 8 — Relatório PDF</title>
   <style>
   @page{size:A4;margin:14mm}body{font-family:Arial,sans-serif;color:#17243b;font-size:10.5px;margin:0}
   h1{color:#0a3472;margin:0 0 3px;font-size:20px}h2{color:#8b2222;margin:18px 0 8px;font-size:15px}.sub{color:#66758b;margin-bottom:14px}
@@ -1212,6 +1213,7 @@ async function phase2OpenReport(id){
     w.document.write(phase2ReportHtml(p));
     w.document.close();
     w.focus();
+    setTimeout(()=>{try{w.print();}catch(_){}},250);
   }catch(e){
     console.error('CCI8 PDF:',e);
     w.document.open();
