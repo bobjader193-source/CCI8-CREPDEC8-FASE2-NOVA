@@ -1,4 +1,4 @@
-const CACHE='cci8-fase2-v30';
+const CACHE='cci8-fase2-v32';
 const BASE='/CCI8-CREPDEC8-FASE2-NOVA/';
 const ASSETS=[BASE,BASE+'index.html',BASE+'manifest.json',BASE+'icon-192.png',BASE+'icon-512.png',BASE+'config.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
