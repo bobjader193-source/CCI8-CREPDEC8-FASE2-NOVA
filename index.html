@@ -424,7 +424,7 @@ function processos(){
  const list=[...map.values()].sort((a,b)=>new Date(b.updated||b.created||0)-new Date(a.updated||a.created||0));
  app.innerHTML=`<div class="card">
  <div class="processHeader">
-  <div><div class="eyebrow">Gestão de processos • FASE 2 • V33</div><h2>Processos</h2>
+  <div><div class="eyebrow">Gestão de processos • FASE 2 • V34</div><h2>Processos</h2>
   <p>Conferências compartilhadas da CREPDEC 8. Qualquer usuário autorizado pode visualizar, editar e continuar uma análise.</p></div>
   <button class="clearAllBtn" type="button" onclick="limparProcessos()">🗑 LIMPAR TODOS</button>
  </div>
@@ -457,7 +457,7 @@ function relatorios(){
    const status=n?n+' pendência(s)':'Sem pendências';
    return '<div class="processRow '+cls+'"><div class="processMain"><div class="processDate">'+formatDateTime(p.updated||p.created)+'</div><b>'+esc(p.municipio||'Sem município')+' — '+esc(p.evento||'Sem evento')+'</b><small>S2iD: '+esc(p.processo||'—')+' • '+status+'</small></div><button class="btn primary" type="button" onclick="gerarPDFProcesso('+JSON.stringify(p.id)+')">▤ PDF</button></div>';
  }).join('');
- app.innerHTML='<div class="card"><div class="eyebrow">Documentos • FASE 2 • V33</div><h2>Relatórios</h2><p>Gere o relatório PDF de uma conferência já registrada.</p>'+(rows||'<div class="emptyProc">Nenhuma conferência registrada.</div>')+'<button class="btn ghost" style="margin-top:14px" onclick="home()">‹ Voltar</button></div>';
+ app.innerHTML='<div class="card"><div class="eyebrow">Documentos • FASE 2 • V34</div><h2>Relatórios</h2><p>Gere o relatório PDF de uma conferência já registrada.</p>'+(rows||'<div class="emptyProc">Nenhuma conferência registrada.</div>')+'<button class="btn ghost" style="margin-top:14px" onclick="home()">‹ Voltar</button></div>';
 }
 function gerarPDFProcesso(id){
  const p=getProcesses().find(x=>String(x.id)===String(id));
@@ -548,7 +548,7 @@ function newCase(){
    <div><label>📅 Data da ocorrência *</label><input id="data" type="date"></div>
    <div><label>🕐 Hora</label><input id="hora" type="time"></div>
    <div><label>📜 Decreto nº / data</label><input id="decreto" placeholder="Ex.: 123/2026"></div>
-   <div><label>📁 Processo S2iD *</label><input id="processo" value="RS-F-" maxlength="26" inputmode="numeric" autocomplete="off" placeholder="RS-F-XXXXXXX-YYYYY-ZZZZZZZZ" oninput="formatarProcessoS2iD(this)"><small class="fieldHint">Formato: RS-F-XXXXXXX-YYYYY-ZZZZZZZZ</small></div>
+   <div><label>📁 Processo S2iD *</label><input id="processo" value="RS-F-" maxlength="27" inputmode="numeric" autocomplete="off" placeholder="RS-F-XXXXXXX-YYYYY-ZZZZZZZZ" oninput="formatarProcessoS2iD(this)"><small class="fieldHint">Formato: RS-F-XXXXXXX-YYYYY-ZZZZZZZZ</small></div>
    <div><label>👤 Agente da análise *</label>
     <div class="select">
       <input id="agenteSearch" class="searchSelect" autocomplete="off" placeholder="Digite parte do nome..." onfocus="toggle('agOpts')" oninput="filterAgentes(this.value)">
@@ -1153,7 +1153,7 @@ function phase2SaveLocalMirror(p){
 
 async function phase2EditProcess(id){
   try{
-    app.innerHTML='<div class="card"><div class="eyebrow">FASE 2 • V33</div><h2>Carregando conferência...</h2><p>Buscando o processo no banco central.</p></div>';
+    app.innerHTML='<div class="card"><div class="eyebrow">FASE 2 • V34</div><h2>Carregando conferência...</h2><p>Buscando o processo no banco central.</p></div>';
     const p=await phase2CloudGet(id);
     current=p;
     const firstPending=GROUPS.findIndex(g=>g.items.some(item=>!current.answers?.[item.id]));
