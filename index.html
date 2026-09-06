@@ -597,7 +597,7 @@ function newCase(){
    <div><label>🕐 Hora</label><input id="hora" type="time"></div>
    <div><label>📜 Decreto nº / data</label><input id="decreto" placeholder="Ex.: 123/2026"></div>
    <div><label>📁 Processo S2iD *</label><input id="processo"></div>
-   <div><label>👤 Agente da análise *</label><input id="agente"></div>
+   <div><label>👤 Agente da análise *</label><input id="agente" autocomplete="name" placeholder="Nome do agente da análise"></div>
   </div>
   <button class="btn primary" style="width:100%;margin-top:20px" onclick="startCase()">INICIAR CONFERÊNCIA →</button>
  </div>
@@ -1245,7 +1245,12 @@ function instalarApp(){
       if(exact && digits.length>=5) pickEvtV35(new Event('change'),COBRADE.indexOf(exact));
     });
     eb.addEventListener('focus',()=>renderEventoBusca(eb.value));
-    document.getElementById('processo').addEventListener('input',e=>formatarProcessoS2iD(e.target));
+    const procField=document.getElementById('processo');
+    procField.value='RS-F-';
+    procField.addEventListener('input',e=>formatarProcessoS2iD(e.target));
+    const agenteField=document.getElementById('agente');
+    const agenteAtual=user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || '';
+    if(agenteAtual) agenteField.value=agenteAtual;
     document.addEventListener('click',function v35Outside(ev){
       if(!ev.target.closest('.searchField')) closeTypeaheads();
     },{once:true});
