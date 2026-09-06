@@ -1108,7 +1108,7 @@ function instalarApp(){
   async function signIn(){
     const email=$('p2Email').value.trim(), password=$('p2Password').value; if(!email||!password){showLogin('Informe e-mail e senha.');return;}
     $('p2Btn').disabled=true; $('p2Error').style.display='none';
-    try{const {data,error}=await cloud.auth.signInWithPassword({email,password}); if(error) throw error; user=data.user; hideLogin(); await p2Home();}
+    try{const {data,error}=await cloud.auth.signInWithPassword({email,password}); if(error) throw error; user=data.user; hideLogin(); await window.home();}
     catch(e){showLogin(e.message||String(e));}
     finally{$('p2Btn').disabled=false;}
   }
@@ -1121,7 +1121,7 @@ function instalarApp(){
       cloud=window.supabase.createClient(window.CCI8_SUPABASE_CONFIG.url,window.CCI8_SUPABASE_CONFIG.key);
       $('p2Btn').addEventListener('click',signIn); $('p2Password').addEventListener('keydown',e=>{if(e.key==='Enter')signIn();});
       const {data}=await cloud.auth.getSession();
-      if(data.session?.user){user=data.session.user; hideLogin(); await p2Home();} else showLogin();
+      if(data.session?.user){user=data.session.user; hideLogin(); await window.home();} else showLogin();
       cloud.auth.onAuthStateChange(async(_event,session)=>{ user=session?.user||null; if(user){hideLogin();} else showLogin(); });
     }catch(e){showLogin(e.message||String(e));}
   }
@@ -1227,7 +1227,7 @@ function instalarApp(){
                  placeholder="RS-F-XXXXXXX-YYYYY-ZZZZZZZZ" oninput="formatarProcessoS2iD(this)">
           <small class="fieldHint">Formato oficial: RS-F-XXXXXXX-YYYYY-ZZZZZZZZ</small>
         </div>
-        <div><label>👤 Agente da análise *</label><input id="agente"></div>
+        <div><label>👤 Agente da análise *</label><input id="agente" value="${escapeHtml(user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email||'')}" readonly></div>
       </div>
       <button class="btn primary" style="width:100%;margin-top:20px" onclick="startCase()">INICIAR CONFERÊNCIA →</button>
     </div>
