@@ -1402,7 +1402,7 @@ function instalarApp(){
               <button class="v36NavBtn" onclick="processos()">▤ PROCESSOS</button>
               <button class="v36NavBtn" onclick="relatorios()">▥ RELATÓRIOS</button>
               <button class="v36NavBtn" onclick="alert('Configurações de usuários serão configuradas na próxima etapa.')">⚙ CONFIGURAÇÕES</button>
-              <div class="v36User"><span>♟ ${escapeHtml(user.email||'Usuário')}</span><span class="v36UserSep"></span><button class="v36NavBtn" onclick="cloud.auth.signOut().then(()=>location.reload())">⇥ SAIR</button></div>
+              <div class="v36User"><span>♟ ${escapeHtml(user.email||'Usuário')}</span><span class="v36UserSep"></span><button class="v36NavBtn" onclick="cloud.auth.signOut().then(()=>{ localStorage.clear(); sessionStorage.clear(); location.href=location.pathname+'?login='+Date.now(); }).catch(e=>{ console.error(e); alert('Não foi possível sair. Tente novamente.'); })">⇥ SAIR</button></div>
             </div>
           </nav>
         </section>
@@ -1447,6 +1447,7 @@ function instalarApp(){
   window.processos = function(){ document.body.classList.remove('v36Home'); return __v36Processos.apply(this,arguments); };
   window.relatorios = function(){ document.body.classList.remove('v36Home'); return __v36Relatorios.apply(this,arguments); };
   window.home=v35Home;
+  window.newCase=v35NewCase;
   window.processos=v35Processes;
   window.relatorios=v35Reports;
   window.editarProcesso=p2Edit;
