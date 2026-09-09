@@ -1116,6 +1116,7 @@ function instalarApp(){
   document.body.classList.remove('v36Home');
   location.replace(location.pathname+'?login='+Date.now());
 }
+window.sairCCI8=sairCCI8;
 
 async function signIn(){
     const email=$('p2Email').value.trim(), password=$('p2Password').value; if(!email||!password){showLogin('Informe e-mail e senha.');return;}
