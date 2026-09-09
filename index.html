@@ -1105,7 +1105,19 @@ function instalarApp(){
     const src=img?.src||''; const m=src.match(/^data:image\/png;base64,(.*)$/); return m?m[1]:'';
   }
 
-  async function signIn(){
+  async function sairCCI8(event){
+  if(event) event.preventDefault();
+  try { if(cloud && cloud.auth) await cloud.auth.signOut({scope:'local'}); } catch(e) { console.error(e); }
+  try {
+    Object.keys(localStorage).forEach(k=>{ if(/^sb-.*-auth-token$/i.test(k)) localStorage.removeItem(k); });
+    sessionStorage.clear();
+  } catch(e) { console.error(e); }
+  user=null;
+  document.body.classList.remove('v36Home');
+  location.replace(location.pathname+'?login='+Date.now());
+}
+
+async function signIn(){
     const email=$('p2Email').value.trim(), password=$('p2Password').value; if(!email||!password){showLogin('Informe e-mail e senha.');return;}
     $('p2Btn').disabled=true; $('p2Error').style.display='none';
     try{const {data,error}=await cloud.auth.signInWithPassword({email,password}); if(error) throw error; user=data.user; hideLogin(); await window.home();}
@@ -1402,7 +1414,7 @@ function instalarApp(){
               <button class="v36NavBtn" onclick="processos()">▤ PROCESSOS</button>
               <button class="v36NavBtn" onclick="relatorios()">▥ RELATÓRIOS</button>
               <button class="v36NavBtn" onclick="alert('Configurações de usuários serão configuradas na próxima etapa.')">⚙ CONFIGURAÇÕES</button>
-              <div class="v36User"><span>♟ ${escapeHtml(user.email||'Usuário')}</span><span class="v36UserSep"></span><button class="v36NavBtn" onclick="cloud.auth.signOut().then(()=>{ localStorage.clear(); sessionStorage.clear(); location.href=location.pathname+'?login='+Date.now(); }).catch(e=>{ console.error(e); alert('Não foi possível sair. Tente novamente.'); })">⇥ SAIR</button></div>
+              <div class="v36User"><span>♟ ${escapeHtml(user.email||'Usuário')}</span><span class="v36UserSep"></span><button class="v36NavBtn" onclick="sairCCI8(event)">⇥ SAIR</button></div>
             </div>
           </nav>
         </section>
